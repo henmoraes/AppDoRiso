@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Required meta tags-->
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<!-- Color theme for statusbar -->
+<meta name="theme-color" content="#795548">
+<!-- Your app title -->
+<title>App Star de bacon vida</title>
+<!-- Path to Framework7 Library CSS, Material Theme -->
+<link rel="stylesheet" href="framework7/css/framework7.material.min.css">
+<!-- Path to Framework7 color related styles, Material Theme -->
+<link rel="stylesheet" href="framework7/css/framework7.material.colors.min.css">
+<!-- Path to your custom app styles-->
+<link rel="stylesheet" href="framework7/css/my-app.css">
+<style type='text/css'>
+/*     .item-text { */
+/* 		max-width: 150px; */
+/* 	} */
+	
+	.item-completado {
+		text-decoration: line-through;
+	}
+</style>
+</head>
+<body class="theme-brown">
+	<!-- Views -->
+	<div class="views">
+		<!-- Your main view, should have "view-main" class -->
+		<div class="view view-main">
+			<!-- Pages container, because we use fixed navbar and toolbar, it has additional appropriate classes-->
+			<div class="pages navbar-fixed">
+			
+				<!-- Page, "data-page" contains page name -->
+				<div data-page="index" class="page">
+
+					<!-- Top Navbar. In Material theme it should be inside of the page-->
+					<div class="navbar">
+						<div class="navbar-inner">
+							<div class="center">App Star de bacon vida</div>
+						</div>
+					</div>
+
+					<!-- Scrollable page content -->
+					<div class="page-content">
+
+						<div class="content-block">
+							<div class="list-block">
+								<ul>
+									<li>
+										<div class="item-content">
+											<div class="item-inner">
+												<div class="item-input">
+													<input type="text" id="item-nome" placeholder="Nome a incluir...">
+												</div>
+											</div>
+										</div>
+									</li>
+								</ul>
+								<p class="buttons-row">
+									<a href="#" class="button button-fill button-raised" onclick="addNome()">Incluir</a>
+								</p>
+							</div>
+	
+							<div class="content-block-title" id="qtd-participantes">Participantes</div>
+							<div class="list-block" id="lista-participantes">
+								<ul>
+									<li id='none-item'>
+										<label class="item-content">
+											<div class="item-inner">
+											  <div class="item-title-row">
+												<div class="color-orange item-title">Nenhum participante adicionado...</div>
+											  </div>
+											</div>
+										</label>
+									</li>
+									<li style='display:none' class="item-content" id='primeiro'>
+										<div class="item-media participante-rem" id="participante0">
+											<a href="#" class="button button-raised btn-remover">
+												<img src='img/remove.png'/>
+											</a>
+											<a href="#" class="button button-raised btn-menos">
+												<img src='img/star-minus.png'/>
+											</a>
+											<a href="#" class="button button-raised btn-mais">
+												<img src='img/star.png'/>
+											</a>
+										</div>
+										<div class="item-inner">
+											<div class="item-title">Participante1</div>
+											<div class="item-after">0</div>
+										</div>
+									</li>
+								</ul>
+							</div>
+						</div>
+
+
+
+						
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Path to Framework7 Library JS-->
+	<script type="text/javascript" src="cordova.js"></script>
+	<script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="framework7/js/framework7.min.js"></script>
+	<!-- Path to your app js-->
+	<script type="text/javascript" src="framework7/js/my-app.js"></script>
+	
+	<script type="text/javascript">
+		var idItem = 1;
+		var pessoas = [];
+		
+		var myApp = new Framework7({
+			material: true,
+			materialRipple: false
+		}); 
+	
+		var mainView = myApp.addView('.view-main', {
+			domCache: true //enable inline pages
+		});
+		
+		$(document).ready(function () {
+			myApp.showPreloader('Carregando...');
+			if (localStorage.getItem("idItem")!=null){
+				idItem = parseInt(localStorage.getItem("idItem")); 
+			}
+			
+			loadList();
+			
+			myApp.hidePreloader();
+			navigator.splashscreen.hide();
+		});
+		
+		function loadList(){
+			if (localStorage.getItem("pessoas") != null ){
+				//localStorage.setItem("pessoas", JSON.stringify(pessoas) );
+				pessoas = JSON.parse(localStorage.getItem("pessoas"));
+				
+				$.each(pessoas, function(index, value) {
+					addNomeLista(value, false);
+				});				
+			}
+		}
+		
+		function configBotoesAcao() {
+			$('#lista-participantes li').each(function () {
+				var id = $(this).find('.participante-rem').attr('id');
+				$(this).find('.btn-menos').unbind('click').click(function () {
+					removerEstrela(id);
+				});
+				$(this).find('.btn-mais').unbind('click').click(function () {
+					adicionarEstrela(id);
+				});
+				$(this).find('.btn-remover').unbind('click').click(function () {
+					removerPessoa(id);
+				});
+			});
+			
+		}
+		
+		function contar(){
+			var qtd = pessoas.length;
+			$('#qtd-participantes').text('Participantes: ' + qtd);
+		}
+		
+		function addNome() {
+			var nome = $('#item-nome').val().toUpperCase();
+			if ( nome.trim() == '' ){
+				myApp.alert('Nome é obrigatório !','Alerta !');
+				return;
+			}
+			
+			var jaExiste = false;
+			$('#lista-participantes li').each(function () {
+				if (nome == $(this).find('.item-title').text() ){
+					jaExiste = true;
+					myApp.alert('Este nome ja foi adicionado !','Alerta !');
+				}
+			});
+			
+			if (!jaExiste){
+				idItem++;
+				if (idItem > 999999){
+					idItem=1;  //resetar contador em algum momento da vida !
+				}
+				localStorage.setItem("idItem", idItem);
+				
+				var participante = {};
+				participante.id = idItem;;
+				participante.nome = nome;
+				participante.qtde = 0;
+				
+				addNomeLista(participante, true);
+			}
+		}
+		
+		function addNomeLista(participante, unitario) {
+			var clone = $('#lista-participantes li#primeiro').clone().removeAttr('id').appendTo('#lista-participantes ul').show();
+			clone.find('.participante-rem').attr('id', 'participante' + participante.id);
+			clone.find('.item-title').text(participante.nome);
+			clone.find('.item-after').text(participante.qtde);
+			
+			configBotoesAcao();
+			
+			if ( unitario ){
+				pessoas.push(participante);
+				localStorage.setItem("pessoas", JSON.stringify(pessoas) );
+				
+				myApp.addNotification({
+					title: 'Incluído com sucesso!',
+					hold: 4000,
+					button: {
+						text: 'Fechar',
+						color: 'green'
+					}
+				});
+				$('#item-nome').val('').focus();
+			}
+			contar();
+			$('#none-item').hide();
+			
+		}
+		
+		function removerEstrela(id) {
+			myApp.confirm('Deseja remover uma estrela ?', 'Remover Estrela', function() {
+				removerEstrelaDeFato(id);
+			});
+		}
+		
+		function adicionarEstrela(id) {
+			myApp.confirm('Deseja adicionar uma estrela ?', 'Adicionar Estrela', function() {
+				adicionarEstrelaDeFato(id);
+			});
+		}
+		
+		function removerPessoa(id) {
+			myApp.confirm('Deseja remover Participante ?', 'Remover Participante', function() {
+				removerPessoaDeFato(id);
+			});
+		}
+		
+		function removerPessoaDeFato(id){
+			$('#' + id).parents('li').remove();
+			id = id.replace('participante','');
+			var ind=-1;
+			$.each(pessoas, function(index, value) {
+				if (value.id == id){
+					ind = index;
+					return false;
+				} 
+			});
+			if ( ind >= 0 ){
+				pessoas.splice(ind, 1);
+				localStorage.setItem("pessoas", JSON.stringify(pessoas) );
+				
+				contar();
+				if ($('#lista-participantes li').length <= 2) {
+					idItem=0;
+					localStorage.setItem("idItem", idItem);
+					$('#none-item').show();
+				}
+			}
+		}
+		
+		function adicionarEstrelaDeFato(id){
+			id = id.replace('participante','');
+			for (var i in pessoas) {
+				if (pessoas[i].id == id) {
+			    	pessoas[i].qtde = pessoas[i].qtde + 1;
+			    	localStorage.setItem("pessoas", JSON.stringify(pessoas) );
+			        break; 
+			    }
+			}
+			location.reload();
+		}
+		
+		function removerEstrelaDeFato(id){
+			id = id.replace('participante','');
+			for (var i in pessoas) {
+			     if (pessoas[i].id == id) {
+			    	 if ( pessoas[i].qtde == 0 ){
+			    		 myApp.alert('Este nome ja foi adicionado !','Alerta !');
+			    	 }else{
+				    	 pessoas[i].qtde = pessoas[i].qtde - 1;
+				    	 localStorage.setItem("pessoas", JSON.stringify(pessoas) );
+			     	 }
+			         break; 
+			     }
+			}
+			location.reload();
+		}
+		
+	</script>
+</body>
+</html>

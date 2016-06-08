@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="br.com.hrmoraes" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+    <preference name="loglevel" value="DEBUG" />
+    <feature name="Whitelist">
+        <param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin" />
+        <param name="onload" value="true" />
+    </feature>
+    <feature name="Device">
+        <param name="android-package" value="org.apache.cordova.device.Device" />
+    </feature>
+    <allow-intent href="market:*" />
+    <preference name="SplashScreen" value="screen" />
+    <preference name="SplashShowOnlyFirstTime" value="false" />
+    <splash density="land-hdpi" src="res/screen/android/drawable-land-hdpi.png" />
+    <splash density="land-ldpi" src="res/screen/android/drawable-land-ldpi.png" />
+    <splash density="land-mdpi" src="res/screen/android/drawable-land-mdpi.png" />
+    <splash density="land-xhdpi" src="res/screen/android/drawable-land-xhdpi.png" />
+    <splash density="port-hdpi" src="res/screen/android/drawable-port-hdpi.png" />
+    <splash density="port-ldpi" src="res/screen/android/drawable-port-ldpi.png" />
+    <splash density="port-mdpi" src="res/screen/android/drawable-port-mdpi.png" />
+    <splash density="port-xhdpi" src="res/screen/android/drawable-port-xhdpi.png" />
+    <icon density="ldpi" src="res/icon/android/drawable-ldpi.png" />
+    <icon density="mdpi" src="res/icon/android/drawable-mdpi.png" />
+    <icon density="hdpi" src="res/icon/android/drawable-hdpi.png" />
+    <icon density="xhdpi" src="res/icon/android/drawable-xhdpi.png" />
+    <name>Importante *Star* de bem com a vida</name>
+    <description>
+        Aplicativo para ver quem são as *Estrelas*
+    </description>
+    <author email="henmoraes@hotmail.com" href="http://www.hrmoraes.com.br">Hendrigo Moraes</author>
+    <content src="index.html" />
+    <preference name="permissions" value="none" />
+    <preference name="orientation" value="default" />
+    <preference name="target-device" value="universal" />
+    <preference name="fullscreen" value="true" />
+    <preference name="webviewbounce" value="true" />
+    <preference name="prerendered-icon" value="true" />
+    <preference name="stay-in-webview" value="false" />
+    <preference name="ios-statusbarstyle" value="black-opaque" />
+    <preference name="detect-data-types" value="true" />
+    <preference name="exit-on-suspend" value="false" />
+    <preference name="show-splash-screen-spinner" value="true" />
+    <preference name="auto-hide-splash-screen" value="true" />
+    <preference name="disable-cursor" value="false" />
+    <preference name="android-minSdkVersion" value="14" />
+    <preference name="android-installLocation" value="auto" />
+    <preference name="SplashScreenDelay" value="5000" />
+    <icon src="res/icon/icon.png" />
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+</widget>
