@@ -17,7 +17,7 @@
        under the License.
  */
 
-package br.com.hrmoraes;
+package br.com.hrmoraes.appstar;
 
 import android.os.Bundle;
 import org.apache.cordova.*;

@@ -8,16 +8,16 @@
     },
     "installed_plugins": {
         "cordova-plugin-console": {
-            "PACKAGE_NAME": "br.com.hrmoraes"
+            "PACKAGE_NAME": "br.com.hrmoraes.appstar"
         },
         "cordova-plugin-device": {
-            "PACKAGE_NAME": "br.com.hrmoraes"
+            "PACKAGE_NAME": "br.com.hrmoraes.appstar"
         },
         "cordova-plugin-splashscreen": {
-            "PACKAGE_NAME": "br.com.hrmoraes"
+            "PACKAGE_NAME": "br.com.hrmoraes.appstar"
         },
         "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "br.com.hrmoraes"
+            "PACKAGE_NAME": "br.com.hrmoraes.appstar"
         }
     },
     "dependent_plugins": {}
