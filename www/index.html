@@ -184,8 +184,12 @@
 		}
 		
 		function contar(){
-			var qtd = pessoas.length;
-			$('#qtd-participantes').text('Participantes: ' + qtd);
+			if ( useFireBase ){
+				$('#qtd-participantes').text('');
+			}else{
+				var qtd = pessoas.length;
+				$('#qtd-participantes').text('Participantes: ' + qtd);
+			}
 		}
 		
 		function addNome() {
@@ -228,7 +232,6 @@
 			if ( unitario ){
 
 				if ( useFireBase ){
-					myApp.showPreloader('Aguarde...');
 					var newPostRef = connFire.push();
 					var postID = newPostRef.key();
 // 					clone.find('.participante-rem').attr('id', 'participante' + postID);
@@ -237,7 +240,6 @@
 					    nome: participante.nome,
 					    qtde: participante.qtde
 					});
-					myApp.hidePreloader();
 					location.reload();
 				}else{
 					var clone = $('#lista-participantes li#primeiro').clone().removeAttr('id').appendTo('#lista-participantes ul').show();
