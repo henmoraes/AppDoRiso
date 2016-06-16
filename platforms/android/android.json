@@ -9,11 +9,15 @@
                 "parents": {
                     "/*": [
                         {
-                            "xml": "<feature name=\"Whitelist\"><param name=\"android-package\" value=\"org.apache.cordova.whitelist.WhitelistPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "xml": "<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>",
                             "count": 1
                         },
                         {
-                            "xml": "<feature name=\"Device\"><param name=\"android-package\" value=\"org.apache.cordova.device.Device\" /></feature>",
+                            "xml": "<feature name=\"SplashScreen\"><param name=\"android-package\" value=\"org.apache.cordova.splashscreen.SplashScreen\" /><param name=\"onload\" value=\"true\" /></feature>",
+                            "count": 1
+                        },
+                        {
+                            "xml": "<feature name=\"Whitelist\"><param name=\"android-package\" value=\"org.apache.cordova.whitelist.WhitelistPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
                             "count": 1
                         }
                     ]
@@ -22,13 +26,16 @@
         }
     },
     "installed_plugins": {
-        "cordova-plugin-whitelist": {
+        "cordova-plugin-console": {
             "PACKAGE_NAME": "br.com.hrmoraes"
         },
         "cordova-plugin-device": {
             "PACKAGE_NAME": "br.com.hrmoraes"
         },
-        "cordova-plugin-console": {
+        "cordova-plugin-splashscreen": {
+            "PACKAGE_NAME": "br.com.hrmoraes"
+        },
+        "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "br.com.hrmoraes"
         }
     },
@@ -41,11 +48,20 @@
             "clobbers": [
                 "device"
             ]
+        },
+        {
+            "file": "plugins/cordova-plugin-splashscreen/www/splashscreen.js",
+            "id": "cordova-plugin-splashscreen.SplashScreen",
+            "pluginId": "cordova-plugin-splashscreen",
+            "clobbers": [
+                "navigator.splashscreen"
+            ]
         }
     ],
     "plugin_metadata": {
-        "cordova-plugin-whitelist": "1.2.2",
+        "cordova-plugin-console": "1.0.3",
         "cordova-plugin-device": "1.1.2",
-        "cordova-plugin-console": "1.0.3"
+        "cordova-plugin-splashscreen": "3.0.0",
+        "cordova-plugin-whitelist": "1.2.2"
     }
 }

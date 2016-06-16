@@ -78,15 +78,9 @@
 										</label>
 									</li>
 									<li style='display:none' class="item-content" id='primeiro'>
-										<div class="item-media participante-rem" id="participante0">
-											<a href="#" class="button button-raised btn-remover">
-												<img src='img/remove.png'/>
-											</a>
-											<a href="#" class="button button-raised btn-menos">
-												<img src='img/star-minus.png'/>
-											</a>
-											<a href="#" class="button button-raised btn-mais">
-												<img src='img/star.png'/>
+ 										<div class="item-media participante-rem" id="participante0"> 
+											<a href="#" class="button button-raised btn-options">
+												<img src='img/options.png'/>
 											</a>
 										</div>
 										<div class="item-inner">
@@ -109,6 +103,7 @@
 	<!-- Path to Framework7 Library JS-->
 	<script type="text/javascript" src="cordova.js"></script>
 	<script type="text/javascript" src="js/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript" src="js/firebase.js"></script>
 	<script type="text/javascript" src="framework7/js/framework7.min.js"></script>
 	<!-- Path to your app js-->
 	<script type="text/javascript" src="framework7/js/my-app.js"></script>
@@ -116,6 +111,9 @@
 	<script type="text/javascript">
 		var idItem = 1;
 		var pessoas = [];
+		var connFire;
+		
+		var useFireBase = true;
 		
 		var myApp = new Framework7({
 			material: true,
@@ -125,41 +123,61 @@
 		var mainView = myApp.addView('.view-main', {
 			domCache: true //enable inline pages
 		});
-		
+
 		$(document).ready(function () {
 			myApp.showPreloader('Carregando...');
-			if (localStorage.getItem("idItem")!=null){
-				idItem = parseInt(localStorage.getItem("idItem")); 
+			
+			if ( useFireBase ){
+				connFire = new Firebase('https://scorching-torch-912.firebaseio.com/prod');
+				
+				connFire.authAnonymously(function(error, authData) {
+				    if (error) {
+				        console.log("Authentication Failed!", error);
+				        myApp.alert('Conexao com Banco de dados Falhou !','Erro !');
+				    } else {
+				        console.log("Authenticated successfully with payload:", authData);
+				    }
+				});
+			}else{
+				var aux = getFromMyDB("idItem");
+				if ( aux ){
+					idItem = parseInt(aux);
+				}else{
+					idItem = 0;
+				}
 			}
 			
 			loadList();
 			
 			myApp.hidePreloader();
 			navigator.splashscreen.hide();
+			
 		});
 		
 		function loadList(){
-			if (localStorage.getItem("pessoas") != null ){
-				//localStorage.setItem("pessoas", JSON.stringify(pessoas) );
-				pessoas = JSON.parse(localStorage.getItem("pessoas"));
-				
-				$.each(pessoas, function(index, value) {
-					addNomeLista(value, false);
-				});				
+			if ( useFireBase ){
+				connFire.orderByChild("nome").on("child_added", function(snapshot) {
+				    var newPost = snapshot.val();
+				    console.log("Nome: " + newPost.nome);
+				    console.log("Qtde: " + newPost.qtde);
+				    addNomeLista(newPost, false);
+				});
+			}else{
+				var aux = getFromMyDB("pessoas");
+				if ( aux ){
+					pessoas = JSON.parse(aux);
+					$.each(pessoas, function(index, value) {
+						addNomeLista(value, false);
+					});
+				}
 			}
 		}
 		
 		function configBotoesAcao() {
 			$('#lista-participantes li').each(function () {
 				var id = $(this).find('.participante-rem').attr('id');
-				$(this).find('.btn-menos').unbind('click').click(function () {
-					removerEstrela(id);
-				});
-				$(this).find('.btn-mais').unbind('click').click(function () {
-					adicionarEstrela(id);
-				});
-				$(this).find('.btn-remover').unbind('click').click(function () {
-					removerPessoa(id);
+				$(this).find('.btn-options').unbind('click').click(function () {
+					options(id);
 				});
 			});
 			
@@ -186,14 +204,18 @@
 			});
 			
 			if (!jaExiste){
-				idItem++;
-				if (idItem > 999999){
-					idItem=1;  //resetar contador em algum momento da vida !
-				}
-				localStorage.setItem("idItem", idItem);
-				
 				var participante = {};
-				participante.id = idItem;;
+				if ( useFireBase ){
+					
+				}else{
+					idItem++;
+					if (idItem > 999999){
+						idItem=1;  //resetar contador em algum momento da vida !
+					}
+					saveToMyDB("idItem", idItem);
+					participante.id = idItem;
+				}
+				
 				participante.nome = nome;
 				participante.qtde = 0;
 				
@@ -202,16 +224,34 @@
 		}
 		
 		function addNomeLista(participante, unitario) {
-			var clone = $('#lista-participantes li#primeiro').clone().removeAttr('id').appendTo('#lista-participantes ul').show();
-			clone.find('.participante-rem').attr('id', 'participante' + participante.id);
-			clone.find('.item-title').text(participante.nome);
-			clone.find('.item-after').text(participante.qtde);
-			
-			configBotoesAcao();
-			
+
 			if ( unitario ){
-				pessoas.push(participante);
-				localStorage.setItem("pessoas", JSON.stringify(pessoas) );
+
+				if ( useFireBase ){
+					myApp.showPreloader('Aguarde...');
+					var newPostRef = connFire.push();
+					var postID = newPostRef.key();
+// 					clone.find('.participante-rem').attr('id', 'participante' + postID);
+					newPostRef.set({
+						id: postID,
+					    nome: participante.nome,
+					    qtde: participante.qtde
+					});
+					myApp.hidePreloader();
+					location.reload();
+				}else{
+					var clone = $('#lista-participantes li#primeiro').clone().removeAttr('id').appendTo('#lista-participantes ul').show();
+					clone.find('.participante-rem').attr('id', 'participante' + participante.id);
+					clone.find('.item-title').text(participante.nome);
+					clone.find('.item-after').text(participante.qtde);
+					clone.find('.participante-rem').attr('id', 'participante' + participante.id);
+					
+					configBotoesAcao();
+					
+					pessoas.push(participante);
+	 				saveToMyDB("pessoas", JSON.stringify(pessoas) );
+				}
+				
 				
 				myApp.addNotification({
 					title: 'Incluído com sucesso!',
@@ -222,26 +262,65 @@
 					}
 				});
 				$('#item-nome').val('').focus();
+			}else{
+// 				if ( (useFireBase && unitario) || (! useFireBase) ){
+				var clone = $('#lista-participantes li#primeiro').clone().removeAttr('id').appendTo('#lista-participantes ul').show();
+				clone.find('.participante-rem').attr('id', 'participante' + participante.id);
+				clone.find('.item-title').text(participante.nome);
+				clone.find('.item-after').text(participante.qtde);
+				
+				configBotoesAcao();
 			}
+			
 			contar();
 			$('#none-item').hide();
 			
 		}
 		
+		function options(id) {
+
+
+			var buttons = [
+               {
+                   text: '+ Estrela',
+                   color: 'green',
+                   onClick: function () {
+                	   adicionarEstrela(id);
+                   }
+               },
+               {
+                   text: '- Estrela',
+                   color: 'yellow',
+                   onClick: function () {
+                	   removerEstrela(id);
+                   }
+               },
+               {
+                   text: 'Excluir',
+                   color: 'red',
+                   onClick: function () {
+                	   removerPessoa(id);
+                   }
+               },
+           ];
+           myApp.actions(buttons);
+
+		}
+		
 		function removerEstrela(id) {
-			myApp.confirm('Deseja remover uma estrela ?', 'Remover Estrela', function() {
+			myApp.confirm('Remover 1 estrela ?', 'Remover Estrela', function() {
 				removerEstrelaDeFato(id);
 			});
 		}
 		
 		function adicionarEstrela(id) {
-			myApp.confirm('Deseja adicionar uma estrela ?', 'Adicionar Estrela', function() {
+			myApp.confirm('Adicionar 1 estrela ?', 'Adicionar Estrela', function() {
 				adicionarEstrelaDeFato(id);
 			});
 		}
 		
 		function removerPessoa(id) {
-			myApp.confirm('Deseja remover Participante ?', 'Remover Participante', function() {
+			myApp.confirm('Excluir participante ?', 'Remover Participante', function() {
 				removerPessoaDeFato(id);
 			});
 		}
@@ -249,54 +328,119 @@
 		function removerPessoaDeFato(id){
 			$('#' + id).parents('li').remove();
 			id = id.replace('participante','');
-			var ind=-1;
-			$.each(pessoas, function(index, value) {
-				if (value.id == id){
-					ind = index;
-					return false;
-				} 
-			});
-			if ( ind >= 0 ){
-				pessoas.splice(ind, 1);
-				localStorage.setItem("pessoas", JSON.stringify(pessoas) );
+			if ( useFireBase ){
 				
-				contar();
-				if ($('#lista-participantes li').length <= 2) {
-					idItem=0;
-					localStorage.setItem("idItem", idItem);
-					$('#none-item').show();
+				var onComplete = function(error) {
+					if (error) {
+						myApp.alert('Erro ao tentar excluir !','Erro !');
+					}else{
+						myApp.addNotification({
+							title: 'Excluído com sucesso!',
+							hold: 4000,
+							button: {
+								text: 'Fechar',
+								color: 'green'
+							}
+						});
+					}
+				};
+				
+				connFire.orderByKey().equalTo(id).once("child_added", function(snapshot) {
+					var hopperRef = connFire.child(snapshot.key());
+					hopperRef.remove(onComplete);
+				});		
+				
+			}else{
+				var ind=-1;
+				$.each(pessoas, function(index, value) {
+					if (value.id == id){
+						ind = index;
+						return false;
+					} 
+				});
+				if ( ind >= 0 ){
+					pessoas.splice(ind, 1);
+					saveToMyDB("pessoas", JSON.stringify(pessoas) );
+					 
+					
+					contar();
+					if ($('#lista-participantes li').length <= 2) {
+						idItem=0;
+						saveToMyDB("idItem", idItem);
+						$('#none-item').show();
+					}
 				}
 			}
 		}
 		
 		function adicionarEstrelaDeFato(id){
 			id = id.replace('participante','');
-			for (var i in pessoas) {
-				if (pessoas[i].id == id) {
-			    	pessoas[i].qtde = pessoas[i].qtde + 1;
-			    	localStorage.setItem("pessoas", JSON.stringify(pessoas) );
-			        break; 
-			    }
+			if ( useFireBase ){
+				
+				connFire.orderByKey().equalTo(id).once("child_added", function(snapshot) {
+					var hop = snapshot.val();
+					hop.qtde = hop.qtde + 1;
+					
+					var hopperRef = connFire.child(snapshot.key());
+					hopperRef.update({
+						"qtde": hop.qtde
+			    	});
+				});				
+				
+			}else{
+				for (var i in pessoas) {
+					if (pessoas[i].id == id) {
+				    	pessoas[i].qtde = pessoas[i].qtde + 1;
+			    		saveToMyDB("pessoas", JSON.stringify(pessoas) );
+				        break; 
+				    }
+				}
 			}
 			location.reload();
 		}
 		
 		function removerEstrelaDeFato(id){
 			id = id.replace('participante','');
-			for (var i in pessoas) {
-			     if (pessoas[i].id == id) {
-			    	 if ( pessoas[i].qtde == 0 ){
-			    		 myApp.alert('Este nome ja foi adicionado !','Alerta !');
-			    	 }else{
-				    	 pessoas[i].qtde = pessoas[i].qtde - 1;
-				    	 localStorage.setItem("pessoas", JSON.stringify(pessoas) );
-			     	 }
-			         break; 
-			     }
+			if ( useFireBase ){
+				connFire.orderByKey().equalTo(id).once("child_added", function(snapshot) {
+					var hop = snapshot.val();
+					if ( hop.qtde > 0 ){
+						hop.qtde = hop.qtde - 1;
+						
+						var hopperRef = connFire.child(snapshot.key());
+						hopperRef.update({
+							"qtde": hop.qtde
+				    	});
+					}
+				});	
+			}else{
+				for (var i in pessoas) {
+				     if (pessoas[i].id == id) {
+				    	 if ( pessoas[i].qtde == 0 ){
+				    	 }else{
+					    	 pessoas[i].qtde = pessoas[i].qtde - 1;
+					    	 saveToMyDB("pessoas", JSON.stringify(pessoas) );
+				     	 }
+				         break; 
+				     }
+				}
 			}
 			location.reload();
 		}
 		
+		function saveToMyDB(id, obj){
+			myApp.showPreloader('Aguarde...');
+			localStorage.setItem(id, obj );
+			myApp.hidePreloader();
+		}
+		
+		function getFromMyDB(id){
+			myApp.showPreloader('Aguarde...');
+			var aux = localStorage.getItem( id );
+			myApp.hidePreloader();
+			return aux;
+		}
+
 	</script>
 </body>
 </html>
